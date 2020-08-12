@@ -61,4 +61,4 @@ It is mostly finished and usable, see ToDo section for issues.
 
 ## Background
 
-This is a side project that I was working on during my time at [KARL STORZ SE & Co. KG](https://www.karlstorz.com/) because I needed a way to do quick 3d visualizations for debugging and for sharing results with colleagues without forcing them to install anything. I was kindly allowed to publish it open source community.
+This is a side project that I was working on during my time at [KARL STORZ SE & Co. KG](https://www.karlstorz.com/) because I needed a way to do quick 3d visualizations for debugging and for sharing results with colleagues without forcing them to install anything. I was kindly allowed to publish it open source.
