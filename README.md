@@ -26,9 +26,15 @@ which draws a coordinate system with 0.1 units axis length.
 
 It is mostly finished and usable, see ToDo section for issues.
 
+## Demo and API
+
+[Our Solar System](https://mqnc.github.io/brovi/brovi_demo)
+
+[API](https://mqnc.github.io/brovi/api_documentation)
+
 ## Architecture
 
-link
+![image of architecture](https://mqnc.github.io/brovi/media/architecture.png)
 
 ## Features
 
