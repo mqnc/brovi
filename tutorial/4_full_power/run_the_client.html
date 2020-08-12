@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>My fourth three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+		<script src="../../brovi/lib/three.js"></script>
+		<script>
+
+			// here we connect to the port that the server listens on
+			var exampleSocket = new WebSocket("ws://localhost:8765");
+
+			// this function just executes everything the server sends
+			exampleSocket.onmessage = function(event){
+				console.log("received data: " + event.data);
+				console.log("executing...");
+				eval(event.data);
+			}
+
+		</script>
+	</body>
+</html>

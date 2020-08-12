@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>My fifth three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+		<script src="../../brovi/lib/three.js"></script>
+		<script>
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			var light = new THREE.HemisphereLight("white", "grey", 1);
+			scene.add( light );
+
+			var geometry = new THREE.DodecahedronGeometry();
+			var material = new THREE.MeshPhongMaterial( { color: 0xffffff } );
+			var myObject = new THREE.Mesh( geometry, material );
+			scene.add( myObject );
+
+			camera.position.z = 3;
+
+			var animate = function () {
+				requestAnimationFrame( animate );
+
+				myObject.rotation.x += 0.01;
+				myObject.rotation.y += 0.01;
+
+				renderer.render( scene, camera );
+			};
+
+			animate();
+
+			function randomizeObjectColor(){
+				myObject.material.color.setRGB(Math.random(), Math.random(), Math.random())
+				console.log("Randomized the color!")
+			}
+
+			function setObjectColor(colorName){
+				myObject.material.color.set(colorName)
+				console.log("Set the color to " + colorName + "!")
+			}
+
+			// we only want these functions to be callable by the outside
+			var rpcFunctions = {randomizeObjectColor, setObjectColor};
+
+			var exampleSocket = new WebSocket("ws://localhost:8765");
+
+			// now we interpret the call instead of just blindly executing whatever
+			exampleSocket.onmessage = function(event){
+				console.log("received data: " + event.data);
+				console.log("interpreting...");
+
+				var rpc = JSON.parse(event.data);
+				// rpc now contains the JSON object that was sent by the server
+
+				if(rpc.fn in rpcFunctions){
+					console.log("calling " + rpc.fn + "() with arguments " + rpc.args + "...");
+					rpcFunctions[rpc.fn].apply(null, rpc.args);
+				}
+				else{
+					console.log("the function " + rpc.fn + " is not available!");
+				}
+			}
+
+			function buttonClick(){
+				exampleSocket.send("click");
+			}
+
+		</script>
+		<button style="position:absolute; top:10px; left:10px; font-size:20pt" onclick="buttonClick()">Click!</button>
+	</body>
+</html>

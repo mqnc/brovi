@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+		<meta charset="UTF-8">
+		<title>BroVi - API Documentation</title>
+		<style>
+			body{
+				font-family:monospace;
+				font-size:12pt;
+			}
+			div{
+				margin-left:20px;
+			}
+			details{
+				margin:10px;
+				border:solid 1px blue;
+				background-color:rgba(0, 0, 255, 0.1);
+			}
+			summary{
+				font-weight:bold;
+				cursor:pointer;
+			}
+		</style>
+	</head>
+	<body>
+
+<h1>BroVi - API Documentation</h1>
+
+<p>This documentation covers all the functionality of BroVi and the WebSocket Remote Procedure Call Bridge. You finde the files in the brovi directory.</p>
+
+<details><summary>Brovi.js</summary><div>
+	<p>This list documents the core functionality of Brovi (without WebSocket bridge)</p>
+
+	<details><summary>Brovi(root)</summary><div>
+		<p>This is the constructor of the Brovi class. All further functions are methods of the created object.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>root</b> is the path of the brovi directory in relation to the html document, needed so brovi knows where to look for files like fonts. (default: "./brovi")</p>
+		<u>Examples:</u>
+		<p>
+			var myBrovi = new Brovi("./libs/brovi")
+		</p>
+	</div></details>
+
+	<details><summary>get(obj)</summary><div>
+		<p>This function finds an object by its name and returns it. It is used internally by BroVi so you can refer to objects by name but you can also call it from inside your own JavaScript script. It doesn't make sense through the RPC bridge though.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>obj</b> has to be the name of an object that was created before.
+		</p>
+		<u>Examples:</u>
+		<p>
+			get("myObj")
+		</p>
+	</div></details>
+
+
+	<details><summary>remove(obj)</summary><div>
+		<p>Delete an object permanently.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>obj</b> has to be the name of an object that was created before.
+		</p>
+		<u>Examples:</u>
+		<p>
+			remove("myObj")
+		</p>
+	</div></details>
+
+
+	<details><summary>hide(obj)</summary><div>
+		<p>Hide an object but don't delete it. You can stop hiding it by using show(obj).</p>
+		<u>Parameters:</u>
+		<p>
+			<b>obj</b> has to be the name of an object that was created before.
+		</p>
+		<u>Examples:</u>
+		<p>
+			hide("myObj")
+		</p>
+	</div></details>
+
+
+	<details><summary>show(obj)</summary><div>
+		<p>Un-hide an object that was hidden using hide(obj).</p>
+		<u>Parameters:</u>
+		<p>
+			<b>obj</b> has to be the name of an object that was created before.
+		</p>
+		<u>Examples:</u>
+		<p>
+			show("myObj")
+		</p>
+	</div></details>
+
+
+	<details><summary>settf(obj, tf)</summary><div>
+		<p>Set the transformation (pose) of an object.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>obj</b> has to be the name of an object that was created before.<br>
+			<b>tf</b> has to be a 4x4 matrix that was created using the homo() function.
+		</p>
+		<u>Examples:</u>
+		<p>
+			settf("myObj", homo({"type":"eye"}))
+		</p>
+	</div></details>
+
+
+	<details><summary>localtf(obj, tf)</summary><div>
+		<p>Post-multiply a transformation to an object's transformation (move it with respect to its own local coordinate system).</p>
+		<u>Parameters:</u>
+		<p>
+			<b>obj</b> has to be the name of an object that was created before.<br>
+			<b>tf</b> has to be a 4x4 matrix that was created using the homo() function.
+		</p>
+		<u>Examples:</u>
+		<p>
+			localtf("myObj", homo({"type":"translate", "x":1}))
+		</p>
+	</div></details>
+
+
+	<details><summary>globaltf(obj, tf)</summary><div>
+		<p>Pre-multiply a transformation to an object's transformation (move it within the global coordinate system).</p>
+		<u>Parameters:</u>
+		<p>
+			<b>obj</b> has to be the name of an object that was created before.<br>
+			<b>tf</b> has to be a 4x4 matrix that was created using the homo() function.
+		</p>
+		<u>Examples:</u>
+		<p>
+			globaltf("myObj", homo({"type":"translate", "x":1}))
+		</p>
+	</div></details>
+
+
+	<details><summary>homo(options)</summary><div>
+		<p>Create a 4x4 homogeneous transformation matrix from one of several conventions.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>type</b> defines the convention, please refer to the examples.
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+// identity matrix
+homo({ "type":"eye" })
+
+// 4x4 matrix in row major format
+homo({ "type":"4x4rowmaj", "values":[11, 12, 13, 14,  21, 22, 23, 24,  31, 32, 33, 34,  41, 42, 43, 44] })
+homo({ "type":"4x4rowmaj", "values":[[11, 12, 13, 14],  [21, 22, 23, 24],  [31, 32, 33, 34],  [41, 42, 43, 44]] })
+
+// column major format
+homo({ "type":"4x4colmaj", ... })
+
+// orientation matrix, position is 0, 0, 0
+homo({ "type":"3x3rowmaj", ... })
+homo({ "type":"3x3colmaj", ... })
+
+// quaternion in wxyz or xyzw or explicit order
+homo({ "type":"quat", "wxyz":[1, 0, 0, 0] })
+homo({ "type":"quat", "xyzw":[0, 0, 0, 1] })
+homo({ "type":"quat", "x":0, "y":0, "z":0, "w":1 })
+
+// translation matrix (if you omit components, they are set to 0)
+homo({ "type":"translate", "xyz":[1, 2, 3] })
+homo({ "type":"translate", "x":1, "y":2 })
+
+// rotation matrix about arbitrary axes
+homo({ "type":"rotate", "axis":"x", "angle":3.1416/2.0 })
+homo({ "type":"rotate", "axis":[1, 1, 1], "angle":3.1416/3.0 })
+
+// scaling matrix
+// (keep in mind that when you use scaling, lengths for children of an object scale as well)
+// (also be aware to set axes you don't want to scale to 1, not 0)
+homo({ "type":"scale", "xyz":[1, 2, 3] })
+homo({ "type":"scale", "y":2 })
+		</pre>
+	</div></details>
+
+
+	<details><summary>homoChain([homo1, homo2, ...])</summary><div>
+		<p>Convenience function to multiply several homogeneous matrices together. The parameters are a list of objects that are passed individually to the homo() function.</p>
+		<u>Examples:</u>
+		<pre>
+homoChain([
+	{ "type":"rotate", "axis":"x", "angle":3.1416/2.0 },
+	{ "type":"rotate", "axis":"y", "angle":3.1416/4.0 }
+])
+		</pre>
+	</div></details>
+
+
+	<details><summary>background(color)</summary><div>
+		<p>Set the background color of the screen.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>color</b> Can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>.
+		</p>
+		<u>Examples:</u>
+		<p>
+			background([1.0, 0.5, 0.0])<br>
+			background("RebeccaPurple")
+		</p>
+	</div></details>
+
+
+	<details><summary>setcolor(color)</summary><div>
+		<p>Set the color of an object.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>obj</b> has to be the name of an object that was created before.<br>
+			<b>color</b> Can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>.
+		</p>
+		<u>Examples:</u>
+		<p>
+			setcolor("myObj", [1.0, 0.5, 0.0])<br>
+			setcolor("myObj", "RebeccaPurple")
+		</p>
+	</div></details>
+
+
+	<details><summary>camera(options)</summary><div>
+		<p>Create a camera. If the camera's pose is the identity, x points right on the picture, y points up on the picture and z points out of the screen towards you.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "camera0", "camera1" etc.)<br>
+				<b>parent</b> is the name of the parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>type</b> "perspective" or "orthographic" (default: "perspecive")<br>
+				<b>fy</b> is the vertical focal length, corresponding to the screen-size of an object at distance 1 in front of the camera where 1 fills half the screen and corresponds to 90deg field of view. (default: 2)<br>
+				<b>near</b> is the near clipping distance, anything closer to the camera than this is not drawn. (default: 0.01)<br>
+				<b>far</b> is the far clipping distance, anything further from the camera than this is not drawn. (default: 100)
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+camera({
+	"name":"myCam",
+	"pose":homo({
+		"type":"translate",
+		"z":5
+	}),
+	"fy":3
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>setcam(cam)</summary><div>
+		<p>Select a camera.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>cam</b> has to be the name of a camera that was created before.
+		</p>
+		<u>Examples:</u>
+		<p>
+			setcam("myCockpitCam")
+		</p>
+	</div></details>
+
+
+	<details><summary>orbit(options)</summary><div>
+		<p>Make a camera controllable by mouse.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>camera</b> is the name of the camera that you want to control. (default is the active camera)
+				<b>up</b> is a vector that says where up is in the world, used to orient the horizon. (default: [0, 0, 1])<br>
+				<b>target</b> defines around which point the camera orbits. (default: [0, 0, 0])
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+orbit({
+	"camera":"myWorldCam",
+	"target":[1, 2, 3],
+	"up":[0, 1, 0]
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>node(options)</summary><div>
+		<p>Create a node. A node is an empty graphics object that can be used as a parent for other objects in the scene.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "node0", "node1" etc.)<br>
+				<b>parent</b> is the name of the node's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+node({
+	"name":"robotBase",
+	"parent":"table",
+	"pose":homo({
+		"type":"translate",
+		"xyz": [0.4, 0.6, 0]
+	})
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>light(options)</summary><div>
+		<p>Create a light source.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "light0", "light1" etc.)<br>
+				<b>parent</b> is the name of the object's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>type</b> can be "ambient", "point", "directional" or "spot". An ambient light illuminates the whole scene equally. A point light is... a point light. A directional light is like an infinitely large plane, infinitely far away, illuminating everything from one direction. A spot light has a position and is more like an actual spot light. If not transformed, directional light and spot light shine towards -z. (default: "point")<br>
+				<b>color</b> can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>. (default: "white")<br>
+				<b>angle</b> is only used for spot lights and describes the opening angle in rad.
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+light({
+	"name":"myAmbientLight",
+	"type":"ambient",
+	"color":[0.2, 0.2, 0.2]
+})
+
+light({
+	"name":"myFireFly",
+	"type":"point",
+	"color":"green",
+	"pose":homo({
+		"type":"translate",
+		"xyz":[1, 2, 3]
+	})
+})
+
+light({
+	"name":"mySunset",
+	"type":"directional",
+	"color":"red",
+	"pose":homo({
+		"type":"rotate",
+		"axis":"y",
+		"angle":1.57
+	})
+})
+
+light({
+	"name":"myFlashLight",
+	"type":"spot",
+	"angle":1.05
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>mesh(options)</summary><div>
+		<p>Create a custom shape object made up of triangles.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "mesh0", "mesh1" etc.)<br>
+				<b>parent</b> is the name of the object's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>vertices</b> is a list of 3d points describing the corner points of the object. (empty by default)<br>
+				<b>faces</b> is a list of triangles, each triangle being an array of three corner indices (starting from 0). (default: [[0, 1, 2], [3, 4, 5], ...])<br>
+				<b>normals</b> is a list of 3d normal vectors for the vertices. (automatically computed by default)<br>
+				<b>color</b> can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>. (default: "white")
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+mesh({
+	"name":"myTetrahedron",
+	"vertices":[
+		[ 1,  1,  1],
+		[ 1, -1, -1],
+		[-1,  1, -1],
+		[-1, -1,  1]
+	]
+	"faces":[
+		[0, 1, 2],
+		[0, 1, 3],
+		[0, 2, 3],
+		[1, 2, 3]
+	"color":"green"
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>picture(options)</summary><div>
+		<p>Load a picture file and display it. If not transformed, the picture spans x=-1..1 and y=-1..1. Note that if you just open an html file from your disk in your browser, you will run into a <a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> issue when trying to load a picture file. So you either need a local server or you convert the picture into a <a href="https://en.wikipedia.org/wiki/Data_URI_scheme">data URI</a> and pass that as the source.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "mesh0", "mesh1" etc.)<br>
+				<b>parent</b> is the name of the object's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>source</b> can be an image file name relative to the html page or data URI.
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+picture({
+	"name":"myJpg",
+	"source":"my_jpeg_that_I_am_not_trying_to_read_directly_from_disk_but_I_am_running_a_server.jpg"
+})
+
+picture({
+	"name":"mySvg",
+	"source":"data:image/svg+xml,%3Csvg version='1.1' baseProfile='full' width='300' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='red' /%3E%3Ccircle cx='150' cy='100' r='80' fill='green' /%3E%3Ctext x='150' y='125' font-size='60' text-anchor='middle' fill='white'%3ESVG%3C/text%3E%3C/svg%3E"
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>line(options)</summary><div>
+		<p>Create a line strip. Note: The line width is still a bit buggy. Try what works.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "line0", "line1" etc.)<br>
+				<b>parent</b> is the name of the object's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>vertices</b> is a list of 3d points describing the waypoints of the line strip. (empty by default)<br>
+				<b>width</b> is the width of the line, depending on the unit parameter. (default: 3)<br>
+				<b>unit</b> can be "px", "%" or "world" where "px" means pixels, "%" is in percent in relation to the image height and "world" means world units. (default: "px")<br>
+				<b>color</b> can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>. (default: "white")
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+line({
+	"name":"myTriangle",
+	"vertices":[
+		[1, 0, 0],
+		[0, 1, 0],
+		[0, 0, 1],
+		[1, 0, 0]
+	],
+	"width":"1.5",
+	"unit":"%",
+	"color":"pink"
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>dot(options)</summary><div>
+		<p>Creates a dot (sphere-ish blob) with radius 1.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "dot0", "dot1" etc.)<br>
+				<b>parent</b> is the name of the object's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>color</b> can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>. (default: "white")
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+dot()
+		</pre>
+	</div></details>
+
+
+	<details><summary>text(options)</summary><div>
+		<p>Create a text label. Note: The meshed text is still a bit buggy. Try what works. Also note that if you just open an html file from your disk in your browser, you will run into a <a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> issue when trying to create a meshed text label because it needs to load a font file. For this to work you need to run from a server. Also note that meshed text is left-justified and rastered text is centered.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "text0", "text1" etc.)<br>
+				<b>parent</b> is the name of the object's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>type</b> can be "mesh" or "raster". Mesh creates an actual triangle mesh but needs to load a JSON-font and only wokrs with a server. Raster rasters the text onto a texture which is much simpler but looks pixelated up close. (default: "mesh")<br>
+				<b>text</b> is the string that is displayed. (default: "Text")<br>
+				<b>height</b> is the height of the text line in world units. (default: 1)<br>
+				<b>extrude</b> only works with meshed text and extrudes it. (default: 0.01)<br>
+				<b>font</b> declares the font to be used. Raster supports any system font, mesh supports "sans", "sansbold", "serif", "serifbold", "mono" and "monobold". (default: "sans")
+				<b>color</b> can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>. (default: "black")
+				<b>resolution</b> defines the vertical pixel resolution for rastered text. (default: 128)
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+text({
+	"text":"Hello Pixelworld!",
+	"color":"red",
+	"type":"raster",
+	"font":"mono",
+	"height":1.2
+})
+
+text({
+	"text":"Hello Meshworld that only works with a server!",
+	"color":"red",
+	"type":"mesh",
+	"font":"sans-serif",
+	"extrude":0.1
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>csys(options)</summary><div>
+		<p>Create a coordinate system from a red line for x, green line for y, blue line for z.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "csys0", "csys1" etc.)<br>
+				<b>parent</b> is the name of the object's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>length</b> of the axes. (default: 1)<br>
+				<b>width</b> is the width of the lines, depending on the unit parameter. (default: 3)<br>
+				<b>unit</b> can be "px", "%" or "world" where "px" means pixels, "%" is in percent in relation to the image height and "world" means world units. (default: "px")
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+csys({
+	"length":10,
+	"width":1,
+	"unit":"%"
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>model(options)</summary><div>
+		<p>Load an object from a 3d model file. Note that if you just open an html file from your disk in your browser, you will run into a <a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> issue when trying to load a model file. So you either need a local server or you convert the model into a <a href="https://en.wikipedia.org/wiki/Data_URI_scheme">data URI</a> and pass that as the source.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the object so it can be referenced by other functions. (default: "model0", "model1" etc.)<br>
+				<b>parent</b> is the name of the object's parent object. Any transformation is defined in relation to the parent and the object moves with the parent. (default is the world origin)<br>
+				<b>pose</b> has to be a 4x4 matrix that was created using the homo() function. It sets the object's transformation in relation to its parent. (default: 4x4 identity)<br>
+				<b>type</b> must be "obj" or "dae" depending on the file type.<br>
+				<b>color</b> can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>. (default is the original mesh color from the file)
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+model({
+	"name":"myDataUriModel",
+	"type":"obj",
+	"source":"data:;base64,ZyB0ZXRyYWhlZHJvbg0KIA0KdiAxLjAwIDEuMDAgMS4wMA0KdiAyLjAwIDEuMDAgMS4wMA0KdiAxLjAwIDIuMDAgMS4wMA0KdiAxLjAwIDEuMDAgMi4wMA0KIA0KZiAxIDMgMg0KZiAxIDQgMw0KZiAxIDIgNA0KZiAyIDMgNA=="
+})
+
+model({
+	"name":"my_ufo_that_I_am_loading_using_a_server",
+	"type":"dae",
+	"source":"ufo.dae"
+})
+		</pre>
+	</div></details>
+
+
+	<details><summary>button(options)</summary><div>
+		<p>Create a clickable button and return it. See the example on how to assign a callback in JavaScript.</p>
+		<u>Parameters:</u>
+		<p>
+			<b>options</b> has to be a JSON-object containing the following optional fields:<div>
+				<b>name</b> is the name of the button so it can be referenced by other functions. (default: "button0", "button1" etc.)<br>
+				<b>x</b> is the horizontal position of the left button edge, 0=left window edge, 1=right window edge. (default: 0.9)<br>
+				<b>y</b> is the vertical position of the top button edge, 0=upper window edge, 1=lower window edge. (default: buttonCounter*0.1 + 0.01)<br>
+				<b>w</b> button width where 1=window width (default: 0.09)<br>
+				<b>h</b> button height where 1=window height (default: 0.08)<br>
+				<b>color</b> can be an array of rgb values between 0.0 and 1.0 or an <a href="https://www.w3schools.com/colors/colors_names.asp">html color name</a>. (default is the original mesh color from the file)
+			</div>
+		</p>
+		<u>Examples:</u>
+		<pre>
+var butt = button({
+	"name":"change_color",
+	"color":"orange",
+	"x":0.05, "y":0.1, "w":0.1, "h":0.15,
+	"text":"Say Hello!"
+})
+butt.onclick = function(){
+	alert("hello!")
+}
+		</pre>
+	</div></details>
+
+</div></details>
+
+<details><summary>Generic Remote Control - WsRpcBridge.js</summary><div>
+	<p>This bridge is a module that does not depend on Brovi and it can also be used in other projects.</p>
+
+	<details><summary>Bridge Functions</summary><div>
+
+		<details><summary>WsRpcBridge(server, namespace, allowEval, logging)</summary><div>
+			<p>This is the constructor of the WsRpcBridge. Once an object is created, it will continuously try to connect with the server. It will also try to reconnect when the connection is broken.</p>
+			<u>Parameters:</u>
+			<p>
+				<b>server</b> is the address of the WebSocket server of your application that the bridge connects to. (default: "ws://localhost:8000")<br>
+				<b>namespace</b> is an object that contains all the methods that can be called as functions by the bridge. (default: the WsRpcBridge object itself)<br>
+				<b>allowEval</b> defines whether the bridge is allowed to call the eval function on messages (which gives a lot more control, makes the message format easier but should be avoided, they say). (default: false)<br>
+				<b>logging</b> defines whether all incoming and outgoing traffic is logged in the web console. (default: false)
+			</p>
+			<u>Examples:</u>
+			<p>
+				var myBridge = new WsRpcBridge("ws://localhost:9000", myLib, true, false)
+			</p>
+		</div></details>
+
+		<details><summary>unwrap(obj)</summary><div>
+			<p>Natively, JSON does not support function calls with a syntax like myFun(args). To support this syntax, you need to run the bridge with allowEval set to true. However, calls can also be wrapped into JSON format and that looks like this:</p>
+			<p>{"type":"call", "name":"myFun", "args":[arg1, arg2, arg3, ...]}</p>
+			<p>(if the function has no arguments, still make sure to pass "args":[])</p>
+			<p>In order to distinguish this from a JSON object, all JSON objects also need to be wrapped:</p>
+			<p>{"type":"obj", "value":originalObject}</p>
+			<p>And we can also perform a variable lookup in the bridge namespace:</p>
+			<p>{"type":"var", "name":"myVar"}</p>
+			<p>All other kinds of data (bools, numbers, strings, arrays) are just passed through. However, if an array contains objects as elements, they also need to be wrapped.</p>
+			<p>The bridge recursively calls this unwrap function on all incoming traffic (that does not start with <b>eval:</b>) so it is important that everything is wrapped accordingly.</p>
+			<u>Examples:</u>
+			<p>Let's say you want the bridge to execute the following command:</p>
+			<p>frobnicate(0, "1", [2, 3], {"four":4, "five":5}, myVar6, myFun(7))</p>
+			<p>Be sure that the methods "frobnicate" and "myFun" and the field "myVar6" are available in the bridge's namespace object. Then you can either have allowEval set to true and send:</p>
+			<p>eval:frobnicate(0, "1", [2, 3], {"four":4, "five:5}, myVar6, myFun(7))</p>
+			<p>or you wrap it into:</p>
+			<pre>
+{
+	"type":"call",
+	"name":"frobnicate",
+	"args":[
+		0,
+		"1",
+		[2, 3],
+		{
+			"type":"obj",
+			"value":{"four":4, "five":5}
+		},
+		{
+			"type":"var",
+			"name":"myVar6"
+		},
+		{
+			"type":"call",
+			"name":"myFun"
+			"args":[7]
+		}
+	]
+}
+			</pre>
+			<p>If frobnicate returns a value that you need, you have to send this object as data payload of an rpc message (see Message Types) and if you just want to call it, you have to send it as a cmd (see Message Types).</p>
+		</div></details>
+
+		<details><summary>send(obj)</summary><div>
+			<p>Sends an object as a JSON string to the server. Note that this object does not need to be wrapped in a way that the unwrap() function understands, it is just sent to your WebSocket server as it is.</p>
+		</div></details>
+
+		<details><summary>event(evt, data)</summary><div>
+			<p>Sends a JSON object as a string with the following structure:<br><br>
+			{"id":-1, "type":"evt", "evt":evt, "data":JSON.stringify(data)}</p>
+			<p>
+				<b>evt</b> is intended as an event identifier string, e.g. "mousedown".<br>
+				<b>data</b> is an object containing all the payload data for the event.
+			</p>
+		</div></details>
+
+	</div></details>
+
+
+	<details><summary>Message Types</summary><div>
+		<p>All communication traffic is sent and received in text format. The following messages are understood and sent:</p>
+
+		<details><summary>eval</summary><div>
+			<p>If you set allowEval to true during bridge construction, the server can send the following message to the bridge:</p>
+			<p>eval:console.log("Full eval power!")</p>
+			<p>The first 5 letters must be lowercase "eval" followed by a colon, this part will be truncated from the string and the eval function is called on the rest of it, effectively executing the string as if it was written in a .js file or entered via developer console.</p>
+		</div></details>
+
+		<details><summary>cmd</summary><div>
+			<p>This is a command that does not expect an answer and it has to come in in the following format:</p>
+			<p>{"type":"cmd", "data":data}</p>
+			<p>The bridge will just unwrap the data. Please refer to the unwrap() function in the Bridge Functions section in order to understand how to wrap the data.</p>
+		</div></details>
+
+		<details><summary>asgn</summary><div>
+			<p>This is an assignment. The bridge will create a variable with this name in its namespace. The message has to come in in the following format:</p>
+			<p>{"type":"asgn", "var":varname, "data":data}</p>
+			<p>The bridge will unwrap the data and assign it to the variable. Please refer to the unwrap() function in the Bridge Functions section in order to understand how to wrap the data.</p>
+		</div></details>
+
+		<details><summary>rpc</summary><div>
+			<p>This is a remote procedure call that will be answered and it has to come in in the following format:</p>
+			<p>{"type":"rpc", "id":id, "data":data}</p>
+			<p>The bridge will unwrap the data and answer with the following message:</p>
+			<p>{"type":"ans", "id":id, unwrap(data)}</p>
+			<p>The id is used so you can match the answer to call. If unwrapping the data returns a value, it is sent back. Please refer to the unwrap() function in the Bridge Functions section in order to understand how to wrap the data.</p>
+		</div></details>
+
+	</div></details>
+</div></details>
+
+<details><summary>BroVi Through The Bridge - index.html</summary><div>
+	<p>This html file creates an instance of BroVi and extends it so it can communicate with an outside application through a WebSocket Remote Procedure Call bridge.</p>
+
+	<details><summary>BroVi Extensions</summary><div>
+		<p>These methods are appended to the Brovi class and are accessible just like Brovi's native methods.</p>
+
+		<details><summary>refresh()</summary><div>
+			<p>This function refreshes the browser window.</p>
+		</div></details>
+
+		<details><summary>ping()</summary><div>
+			<p>This function just returns "pong". It can be used to measure the delay through the rpc bridge or it can be called synchronously to make your application wait for the browser to catch up.</p>
+		</div></details>
+
+		<details><summary>reflect()</summary><div>
+			<p>This function returns a list of all functions and variables that brovi provides. If you are working in a dynamic programming language, you can then make those functions available in the global namespace.</p>
+		</div></details>
+
+	</div></details>
+
+
+	<details><summary>Built-in Events</summary><div>
+		<p>These events are automatically sent to the server once the window is running. However, feel free to generate your own events and send them via the event method of the WsRpcBridge class.</p>
+
+		<details><summary>keydown</summary><div>
+			<p>This event is sent when the user hits a key in the browser window.</p>
+			<u>Data:</u>
+			<p>
+				<b>key</b> The key that was pressed, e.g. "a" or "Enter". See <a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values">here</a> for a list of possible values.
+			</p>
+			<u>Examples:</u>
+			<p>
+				{"id":-1, "type":"evt", "evt":"keydown", "data":{"key":"g"}}
+			</p>
+		</div></details>
+
+		<details><summary>keyup</summary><div>
+			<p>This event is sent when the user releases a key in the browser window.</p>
+			<u>Data:</u>
+			<p>
+				<b>key</b> The key that was released, e.g. "a" or "Enter". See <a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values">here</a> for a list of possible values.
+			</p>
+			<u>Examples:</u>
+			<p>
+				{"id":-1, "type":"evt", "evt":"keyup", "data":{"key":"g"}}
+			</p>
+		</div></details>
+
+		<details><summary>mousedown</summary><div>
+			<p>This event is sent when the user clicks in the browser window.</p>
+			<u>Data:</u>
+			<p>
+				<b>x</b> is the coordinate of the click measured in pixels from the left website edge.<br>
+				<b>y</b> is the coordinate of the click measured in pixels from the top website edge.<br>
+				<b>w</b> is the current website width in pixels.<br>
+				<b>h</b> is the current website height in pixels.
+			</p>
+			<u>Examples:</u>
+			<p>
+				{"id":-1,"type":"evt","evt":"mousedown","data":{"x":123,"y":456,"w":800,"h":600}}
+			</p>
+		</div></details>
+
+		<details><summary>mouseup</summary><div>
+			<p>This event is sent when the user releases the mouse in the browser window.</p>
+			<u>Data:</u>
+			<p>
+				<b>x</b> is the coordinate of the click measured in pixels from the left website edge.<br>
+				<b>y</b> is the coordinate of the click measured in pixels from the top website edge.<br>
+				<b>w</b> is the current website width in pixels.<br>
+				<b>h</b> is the current website height in pixels.
+			</p>
+			<u>Examples:</u>
+			<p>
+				{"id":-1,"type":"evt","evt":"mouseup","data":{"x":123,"y":456,"w":800,"h":600}}
+			</p>
+		</div></details>
+
+		<details><summary><strike>mousemove</strike></summary><div>
+			<p><strike>This event is sent when the user moves the mouse in the browser window.</strike> (deactivated for performance reasons)</p>
+		</div></details>
+
+		<details><summary>buttonclick</summary><div>
+			<p>This event is sent when the user clicks on a button.</p>
+			<u>Data:</u>
+			<p>
+				<b>(simple string)</b> representing the name of the button that was clicked.
+			</p>
+			<u>Examples:</u>
+			<p>
+				{"id":-1,"type":"evt","evt":"buttonclick","data":"myButton"}
+			</p>
+		</div></details>
+
+	</div></details>
+</div></details>
+
+	</body>
+</html>

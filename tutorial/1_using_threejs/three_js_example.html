@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+		<script src="../../brovi/lib/three.js"></script>
+		<script>
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			var light = new THREE.HemisphereLight("white", "grey", 1);
+			scene.add( light );
+
+			var geometry = new THREE.DodecahedronGeometry();
+			var material = new THREE.MeshPhongMaterial( { color: 0xffffff } );
+			var myObject = new THREE.Mesh( geometry, material );
+			scene.add( myObject );
+
+			camera.position.z = 3;
+
+			var animate = function () {
+				requestAnimationFrame( animate );
+
+				myObject.rotation.x += 0.01;
+				myObject.rotation.y += 0.01;
+
+				renderer.render( scene, camera );
+			};
+
+			animate();
+		</script>
+	</body>
+</html>

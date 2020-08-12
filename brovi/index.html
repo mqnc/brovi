@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--
+This file provides some extensions for control by another application.
+You don't need it if you use BroVi from html.
+
+the URL takes three parameters:
+- the websocket server address
+- whether it accepts eval commands
+- whether it should log traffic
+example: index.html?ws=ws://localhost:8000&eval=false&log=true
+-->
+<html>
+	<head>
+
+		<title>Browser Visualization - WebSocket Bridge</title>
+
+		<!-- avoid favicon request -->
+		<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+		<!-- page encoding -->
+		<meta charset="UTF-8">
+
+		<style>
+			button {
+				border: solid 1px lightgray;
+				box-shadow: 1px 1px 2px #777;
+			}
+		</style>
+
+		<script src="lib/three.min.js"></script>
+		<script src="lib/OrbitControls.js"></script>
+		<script src="lib/OBJLoader.js"></script>
+		<script src="lib/ColladaLoader.js"></script>
+		<script src="Brovi.js"></script>
+		<script src="WsRpcBridge.js"></script>
+
+	</head>
+	<body>
+		<script>
+
+var brovi = new Brovi(".")
+
+// reload the page
+brovi.refresh=function(){
+	location.reload(true)
+}
+
+// for delay measurement and synchronization
+brovi.ping=function(){
+	return "pong"
+}
+
+// this function returns a list of all functions and variables that brovi provides
+brovi.reflect=function(){
+	var functions = []
+	var objects = []
+	var members = Object.getOwnPropertyNames(this).concat(Object.getOwnPropertyNames(this.__proto__))
+	for(i in members){
+		m = members[i]
+		if(typeof(this[m]) === "function"){functions.push(m)}
+		else{objects.push(m)}
+	}
+	return {functions:functions, objects:objects}
+}
+
+// parse URL parameters and start websocket bridge
+var urlParams = new URLSearchParams(location.search);
+var rpc = new WsRpcBridge(
+	urlParams.get("ws"),
+	brovi,
+	urlParams.get("eval") == "true",
+	urlParams.get("log") == "true"
+)
+
+// send mouse and key events
+window.addEventListener("keydown", function(evt){
+	if(!evt.repeat){
+		rpc.event("keydown", evt.key)
+	}
+})
+window.addEventListener("keyup", function(evt){
+	rpc.event("keyup", evt.key)
+})
+window.addEventListener("mousedown", function(evt){
+	rpc.event("mousedown", {x:evt.clientX, y:evt.clientY, w:window.innerWidth, h:window.innerHeight})
+})
+window.addEventListener("mouseup", function(evt){
+	rpc.event("mouseup", {x:evt.clientX, y:evt.clientY, w:window.innerWidth, h:window.innerHeight})
+})
+// this has been disabled to save traffic
+//window.addEventListener("mousemove", function(evt){
+//	rpc.event("mousemove", {x:evt.clientX, y:evt.clientY, w:window.innerWidth, h:window.innerHeight})
+//})
+
+// this is a little hack that automatically injects a callback everytime a new button is created
+// the callback sends a buttonclick message through the rpc bridge
+var buttonWrapped = brovi.button
+brovi.button = function(options){
+	var butt = buttonWrapped(options)
+	butt.onclick = function(){
+		document.activeElement.blur()
+		rpc.event("buttonclick", butt.id)
+	}
+}
+
+// make all brovi members global to make them eval-able
+var refl = brovi.reflect()
+for(i in refl.functions){
+	window[refl.functions[i]] = brovi[refl.functions[i]]
+}
+for(i in refl.objects){
+	window[refl.objects[i]] = brovi[refl.objects[i]]
+}
+		</script>
+	</body>
+</html>
