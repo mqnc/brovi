@@ -59,6 +59,6 @@ It is mostly finished and usable, see ToDo section for issues.
 * 2d / 3d plots
 * Multiple visualization windows on a single page
 
-## Background
+## Partners
 
-This is a side project that I was working on during my time at [KARL STORZ SE & Co. KG](https://www.karlstorz.com/) because I needed a way to do quick 3d visualizations for debugging and for sharing results with colleagues without forcing them to install anything. I was kindly allowed to publish it open source.
+This project is used at [KARL STORZ SE & Co. KG](https://www.karlstorz.com/)
