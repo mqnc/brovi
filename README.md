@@ -24,7 +24,13 @@ which draws a coordinate system with 0.1 units axis length.
 
 ## Project Status
 
-It is mostly finished and usable, see ToDo section for issues.
+Although mostly finished and usable, this is still a prototype. Line thickness, text labels and automatic browser launch are slightly buggy. Many new features are planned:
+
+* Rather than letting everyone implement their own WebSocket server in their favorite language, one HTTP+WebSocket server will be implemented in C++ using [uWebSockets](https://github.com/uNetworking/uWebSockets). It can then be wrapped in other languages using SWIG. People can still implement their own servers though.
+
+* A custom language will be created that can both be used from JavaScript and through the WebSocket interface. If eval should be avoided on js' side, WebSocket messages will have to be parsed anyway.
+
+* Text labels will be implemented using 3d CSS. The disadvantage is that the text will always be above any graphics object. The advantages are that the text is sharp and smooth, does not require elaborate shaders or meshes, can be selected and [KaTeX](https://katex.org/) can easily be used.
 
 ## Demo and API
 
@@ -46,18 +52,6 @@ It is mostly finished and usable, see ToDo section for issues.
 * 3d text labels
 * HTML buttons which send events to the application
 * Keyboard and mouse events also sent to the application
-
-## ToDo
-
-* Line thickness is buggy
-* Text labels are buggy
-* Automatic browser launch from application in pybrovi is buggy
-* Code refactory (quick and dirty spaghetti code protottype engineering &rarr; coherent piece of software architecture)
-* Demo for use from C++
-* Support for much more powerful gltf model format [(link)](https://threejs.org/examples/#webgl_loader_gltf)
-* Nicer text rendering [(link)](https://medium.com/@evanwallace/easy-scalable-text-rendering-on-the-gpu-c3f4d782c5ac)
-* 2d / 3d plots
-* Multiple visualization windows on a single page
 
 ## Partners
 
